@@ -35,7 +35,7 @@ public class Checkout {
 			switch(sku)
 			{
 				case A: {
-					computeForSKUItemA(skuBasketValue, numberOfSKUsInTheBasket, sku);
+					computeForSKUItemA(skuBasketValue, skuNumberOfItemsInBasket, sku);
 					break;
 				}
 				
@@ -45,29 +45,43 @@ public class Checkout {
 				}
 				
 				case C:
-				case D: {
+				case D:
+				case G:
+				case I:
+				case J:
+				case L:
+				case M:
+				case O:
+				case S: {
 					skuBasketValue.put(sku, numberOfSKUsInTheBasket * sku.price());
 					break; 
 				}
 					
 				case E: {
-					computeForSKUItemE(skuBasketValue, skuNumberOfItemsInBasket, numberOfSKUsInTheBasket, sku);
+					computeForSKUItemE(sku, skuBasketValue, skuNumberOfItemsInBasket, numberOfSKUsInTheBasket);
 					break; 
-				}	
+				}		
 				
 				case F: {
-					int totalForThisSKU = 0;
-					int numberOfPairsOfItemF = 0;
-					while(numberOfSKUsInTheBasket >= 3)
-					{
-						numberOfSKUsInTheBasket = numberOfSKUsInTheBasket - 2;
-						numberOfPairsOfItemF++;
-						numberOfSKUsInTheBasket--;
-					}
-					totalForThisSKU = (numberOfSKUsInTheBasket * sku.price());
-					totalForThisSKU = totalForThisSKU + (numberOfPairsOfItemF * 2 * sku.price());
+					computeForSKUItemF(skuBasketValue, sku, numberOfSKUsInTheBasket);
+					break;
+				}
+				
+				case H: {
+					int numberOfBatchesOf10 = (int) Math.ceil(numberOfSKUsInTheBasket / 10);
+					int remainder = numberOfSKUsInTheBasket % 10;
+					int totalForThisSKU = numberOfBatchesOf10 * 80;
 					
+					if(remainder >= 5)
+					{
+						int numberOfBatchesOf5 = (int) Math.ceil(numberOfSKUsInTheBasket / 5);
+						totalForThisSKU = totalForThisSKU + (numberOfBatchesOf5 * 45);
+						remainder = remainder % 5;
+					}
+					
+					totalForThisSKU = totalForThisSKU + (remainder * sku.price());
 					skuBasketValue.put(sku, totalForThisSKU);
+					break; 
 				}
 			}
 			
@@ -75,6 +89,26 @@ public class Checkout {
 		}
 		
 		return getTotalOfAllSKUInTheBasket(skuBasketValue);
+	}
+
+	/*private static int computeTotalForMultipleItems(SKU sku, Integer numberOfSKUsInTheBasket, int numberOfItemsInABatch, int offerPriceForBatch) {
+		int numberOfBatches = (int) Math.ceil(numberOfSKUsInTheBasket / numberOfItemsInABatch);
+		return (remainder * sku.price()) + numberOfBatches * offerPriceForBatch;
+	}*/
+
+	private static void computeForSKUItemF(Map<SKU, Integer> skuBasketValue, SKU sku, Integer numberOfSKUsInTheBasket) {
+		int totalForThisSKU = 0;
+		int numberOfPairsOfItemF = 0;
+		while(numberOfSKUsInTheBasket >= 3)
+		{
+			numberOfSKUsInTheBasket = numberOfSKUsInTheBasket - 2;
+			numberOfPairsOfItemF++;
+			numberOfSKUsInTheBasket--;
+		}
+		totalForThisSKU = (numberOfSKUsInTheBasket * sku.price());
+		totalForThisSKU = totalForThisSKU + (numberOfPairsOfItemF * 2 * sku.price());
+		
+		skuBasketValue.put(sku, totalForThisSKU);
 	}
 
 	private static Map<SKU, Integer> parseSKUItemsInBasket(String basket) {
@@ -98,10 +132,11 @@ public class Checkout {
 	}
 
 
-	private static void computeForSKUItemA(Map<SKU, Integer> skuBasketValue, Integer numberOfSKUs, SKU sku) 
+	private static void computeForSKUItemA(Map<SKU, Integer> skuBasketValue, Map<SKU, Integer> skuNumberOfItemsInTheBasket, SKU sku) 
 	{
-		int numberOfBatchesOf5TimesA = (int) Math.ceil(numberOfSKUs / 5);
-		int remainder = numberOfSKUs % 5; 
+		int numberOfSKUsInTheBasket = skuNumberOfItemsInTheBasket.get(sku);
+		int numberOfBatchesOf5TimesA = (int) Math.ceil(numberOfSKUsInTheBasket / 5);
+		int remainder = numberOfSKUsInTheBasket % 5; 
 		int totalForThisSKU	 = numberOfBatchesOf5TimesA * 200;
 		
 		int numberOfBatchesOf3TimesA = (int) Math.ceil(remainder / 3);
@@ -118,7 +153,7 @@ public class Checkout {
 		skuBasketValue.put(sku, totalForThisSKU);
 	}
 	
-	private static void computeForSKUItemE(Map<SKU, Integer> skuBasketValue, Map<SKU, Integer> skuNumberOfItemsInTheBasket, Integer numberOfSKUsInTheBasket, SKU sku) {
+	private static void computeForSKUItemE(SKU sku, Map<SKU, Integer> skuBasketValue, Map<SKU, Integer> skuNumberOfItemsInTheBasket, Integer numberOfSKUsInTheBasket) {
 		skuBasketValue.put(sku, numberOfSKUsInTheBasket * sku.price());
 		
 		int numberOfBatchesOf2TimesE = (int) Math.ceil(numberOfSKUsInTheBasket / 2);
@@ -150,7 +185,15 @@ enum SKU
 	C("C", 20),
 	D("D", 15),
 	E("E", 40),
-	F("F", 10)
+	F("F", 10),
+	G("G", 20),
+	H("H", 10),
+	I("I", 35),
+	J("J", 60),
+	L("L", 90),
+	M("M", 15),
+	O("O", 10),
+	S("S", 30),
 	;
 	
 	private final String name;

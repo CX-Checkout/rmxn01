@@ -60,6 +60,21 @@ public class CheckoutTest {
 					{"FFFFFF", 40},
 					{"FFFFFFF", 50},
 					
+					{"G", 20},
+					
+					{"H", 10},
+					{"HH", 20},
+					{"HHHHH", 45},
+					{"HHHHHH", 55},
+					{"HHHHHHHHHH", 80},
+					
+					{"I", 35},
+					{"J", 60},
+					{"L", 90},
+					{"M", 15},
+					{"O", 10},
+					{"S", 30},					
+					
 					// edge cases
 					{"ABCa", -1},
 					{"AxA", -1}
