@@ -52,6 +52,14 @@ public class CheckoutTest {
 					{"EB", 70},
 					{"EBB", 85},
 					
+					{"F", 10},
+					{"FF", 20},
+					{"FFF", 20},
+					{"FFFF", 30},
+					{"FFFFF", 40},
+					{"FFFFFF", 40},
+					{"FFFFFFF", 50},
+					
 					// edge cases
 					{"ABCa", -1},
 					{"AxA", -1}

@@ -45,7 +45,7 @@ public class Checkout {
 				}
 				
 				case C:
-				case D : {
+				case D: {
 					skuBasketValue.put(sku, numberOfSKUsInTheBasket * sku.price());
 					break; 
 				}
@@ -54,6 +54,21 @@ public class Checkout {
 					computeForSKUItemE(skuBasketValue, skuNumberOfItemsInBasket, numberOfSKUsInTheBasket, sku);
 					break; 
 				}	
+				
+				case F: {
+					int totalForThisSKU = 0;
+					int numberOfPairsOfItemF = 0;
+					while(numberOfSKUsInTheBasket >= 3)
+					{
+						numberOfSKUsInTheBasket = numberOfSKUsInTheBasket - 2;
+						numberOfPairsOfItemF++;
+						numberOfSKUsInTheBasket--;
+					}
+					totalForThisSKU = (numberOfSKUsInTheBasket * sku.price());
+					totalForThisSKU = totalForThisSKU + (numberOfPairsOfItemF * 2 * sku.price());
+					
+					skuBasketValue.put(sku, totalForThisSKU);
+				}
 			}
 			
 				
@@ -134,7 +149,8 @@ enum SKU
 	B("B", 30),
 	C("C", 20),
 	D("D", 15),
-	E("E", 40)
+	E("E", 40),
+	F("F", 10)
 	;
 	
 	private final String name;
