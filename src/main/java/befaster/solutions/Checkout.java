@@ -2,78 +2,127 @@ package befaster.solutions;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
+
 import static befaster.solutions.SKU.A;
+import static befaster.solutions.SKU.B;
 
 public class Checkout {
 	
-	public static Integer checkout(String skus)
+	public static Integer checkout(String basket)
 	{
-		Map<String, Integer> skuCounts = new HashMap<>();
-		if(skus.equals(""))
+		if(basket.equals(""))
 			return 0;
-		if(skus.equals("-"))
+		if(basket.equals("-"))
 			return -1;
 		
-		String[] splitSkus = skus.split("");
+		Map<SKU, Integer> skuBasketValue = new TreeMap<>();
+		Map<SKU, Integer> skuNumberOfItemsInBasket;
 		
-		for(String thisSku : splitSkus)
-		{	
-			int count = 0;
-			
-			if(skuCounts.containsKey(thisSku))
-			{
-				count = skuCounts.get(thisSku);
-			}
-			skuCounts.put(thisSku, ++count);
+		try {
+			skuNumberOfItemsInBasket = parseSKUItemsInBasket(basket);
+		}
+		catch(IllegalArgumentException iae)
+		{
+			return -1;
 		}
 		
 
-		int totalForAllSkus = 0;
-		int totalForThisSku;
-		for(String skuItem : skuCounts.keySet())
+		for(SKU sku : skuNumberOfItemsInBasket.keySet())
 		{
-			Integer numberOfSkus = skuCounts.get(skuItem);
-			
-			try {
-				SKU sku = SKU.valueOf(skuItem);
-				
-				switch(sku)
-				{
-					case A:
-						{
-							int numberOfBatchesOf3TimesA = (int) Math.ceil(numberOfSkus / 3);
-							int remainder = numberOfSkus % 3;
-							totalForThisSku = (remainder * sku.price()) + numberOfBatchesOf3TimesA * 130;
-							break;
-						}
-					
-					case B:
-						{
-							int numberOfBatchesOf2TimesB = (int) Math.ceil(numberOfSkus / 2);
-							int remainder = numberOfSkus % 2;
-							totalForThisSku = (remainder * sku.price()) + numberOfBatchesOf2TimesB * 45;
-							break;
-						}
-					case C:
-						
-					case D:
-						totalForThisSku = (numberOfSkus * sku.price());
-						break; 
-						
-					default:
-						totalForThisSku = (numberOfSkus * sku.price());
-			
-				}
-			}
-			catch(IllegalArgumentException iae)
+			Integer numberOfSKUsInTheBasket = skuNumberOfItemsInBasket.get(sku);
+			 		
+			switch(sku)
 			{
-				return -1;
+				case A: {
+					computeForSKUItemA(skuBasketValue, numberOfSKUsInTheBasket, sku);
+					break;
+				}
+				
+				case B:{
+					computeForSKUItemB(skuBasketValue, numberOfSKUsInTheBasket, sku);
+					break;
+				}
+				
+				case C:
+				case D : {
+					skuBasketValue.put(sku, numberOfSKUsInTheBasket * sku.price());
+					break; 
+				}
+					
+				case E: {
+					computeForSKUItemE(skuBasketValue, skuNumberOfItemsInBasket, numberOfSKUsInTheBasket, sku);
+					break; 
+				}	
 			}
 			
-			totalForAllSkus = totalForAllSkus + totalForThisSku;
-		
+				
 		}
 		
+		return getTotalOfAllSKUInTheBasket(skuBasketValue);
+	}
+
+	private static Map<SKU, Integer> parseSKUItemsInBasket(String basket) {
+		Map<SKU, Integer> result = new TreeMap<>();
+		String[] basketSplit = basket.split("");
+		
+		for(String eachBasketItem : basketSplit)
+		{	
+			SKU sku = SKU.valueOf(eachBasketItem);
+			int count = 0;
+			
+			if(result.containsKey(sku))
+			{
+				count = result.get(sku);
+			}
+			result.put(sku, ++count);
+
+		}
+		
+		return result;
+	}
+
+
+	private static void computeForSKUItemA(Map<SKU, Integer> skuBasketValue, Integer numberOfSKUs, SKU sku) 
+	{
+		int numberOfBatchesOf5TimesA = (int) Math.ceil(numberOfSKUs / 5);
+		int remainder = numberOfSKUs % 5; 
+		int totalForThisSKU	 = numberOfBatchesOf5TimesA * 200;
+		
+		int numberOfBatchesOf3TimesA = (int) Math.ceil(remainder / 3);
+		remainder = remainder % 3;
+		totalForThisSKU = totalForThisSKU + (remainder * sku.price()) + numberOfBatchesOf3TimesA * 130;
+		
+		skuBasketValue.put(sku, totalForThisSKU);
+	}
+	
+	private static void computeForSKUItemB(Map<SKU, Integer> skuBasketValue, Integer numberOfSkus, SKU sku) {
+		int numberOfBatchesOf2TimesB = (int) Math.ceil(numberOfSkus / 2);
+		int remainder = numberOfSkus % 2; 
+		int totalForThisSKU = (remainder * sku.price()) + numberOfBatchesOf2TimesB * 45;
+		skuBasketValue.put(sku, totalForThisSKU);
+	}
+	
+	private static void computeForSKUItemE(Map<SKU, Integer> skuBasketValue, Map<SKU, Integer> skuNumberOfItemsInTheBasket, Integer numberOfSKUsInTheBasket, SKU sku) {
+		skuBasketValue.put(sku, numberOfSKUsInTheBasket * sku.price());
+		
+		int numberOfBatchesOf2TimesE = (int) Math.ceil(numberOfSKUsInTheBasket / 2);
+		if(numberOfBatchesOf2TimesE > 0 && skuBasketValue.containsKey(B))
+		{
+			int numberOfBItemsInTheBasket = skuNumberOfItemsInTheBasket.get(B);
+			int remainingBItems = numberOfBItemsInTheBasket - numberOfBatchesOf2TimesE; 
+			skuBasketValue.put(B, remainingBItems);
+			computeForSKUItemB(skuBasketValue, remainingBItems, B);
+		}
+	}
+
+
+	private static Integer getTotalOfAllSKUInTheBasket(Map<SKU, Integer> skuBasketValue) {
+		int totalForAllSkus = 0;
+		for(SKU sku : skuBasketValue.keySet())
+		{
+			totalForAllSkus = totalForAllSkus + skuBasketValue.get(sku);
+		}
 		return totalForAllSkus;
 	}
 }
@@ -84,7 +133,8 @@ enum SKU
 	A("A", 50),
 	B("B", 30),
 	C("C", 20),
-	D("D", 15)
+	D("D", 15),
+	E("E", 40)
 	;
 	
 	private final String name;

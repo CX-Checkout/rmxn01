@@ -2,75 +2,72 @@ package befaster.solutions;
 
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static java.util.Arrays.asList;
 
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
 public class CheckoutTest {
 	
-	@Test
-	public void return_zero_for_empty_input()
+	private final String basket;
+	private final int totalValue;
+	
+	@Parameters(name = "basket with {0} is of total value {1}")
+	public static Collection<Object[]> data()
 	{
-		assertThat("empty input", Checkout.checkout(""), equalTo(0));
+		return asList(
+			new Object[][]
+			{
+					// illegal cases
+					{"", 0},
+					{"-", -1},
+					
+					// happy path
+					{"A", 50},
+					{"AA", 100},
+					
+					{"AAA", 130}, //special offer
+					{"AAAAA", 200}, //special offer
+					
+					{"B", 30},
+					{"BB", 45},
+					{"CCCC", 80},
+					{"D", 15},
+					{"E", 40},
+					{"EE", 80},
+					
+					// special offer
+					{"EEB", 80},
+					{"EEEB", 120},
+					{"EEBB", 110},
+					{"EEEBB", 150},
+					{"EEEEBB", 160},
+					{"EEBBB", 80+0+45},
+					{"EB", 70},
+					{"EBB", 85},
+					
+					// edge cases
+					{"ABCa", -1},
+					{"AxA", -1}
+			}
+		);
+	}
+	
+	public CheckoutTest(String basket, int totalValue)
+	{
+		this.basket = basket;
+		this.totalValue = totalValue;
 	}
 	
 	@Test
-	public void return_minus_one_for_illegal_input()
+	public void return_value_of_items_in_the_basket()
 	{
-		assertThat("-", Checkout.checkout("-"), equalTo(-1));
-	}
-	
-	
-	@Test
-	public void return_50_for_one_item_of_A()
-	{
-		assertThat(Checkout.checkout("A"), equalTo(50));
-	}
-	
-	@Test
-	public void return_100_for_two_items_of_A()
-	{
-		assertThat(Checkout.checkout("AA"), equalTo(100));
-	}
-	
-	@Test
-	public void return_130_for_three_items_of_A()
-	{
-		assertThat(Checkout.checkout("AAA"), equalTo(130));
-	}
-	
-	@Test
-	public void return_30_for_one_item_of_B()
-	{
-		assertThat(Checkout.checkout("B"), equalTo(30));
-	}
-	
-	@Test
-	public void return_45_for_two_items_of_B()
-	{
-		assertThat(Checkout.checkout("BB"), equalTo(45));
-	}
-	
-	@Test
-	public void return_80_for_four_items_of_C()
-	{
-		assertThat(Checkout.checkout("CCCC"), equalTo(80));
-	}
-	
-	@Test
-	public void return_15_for_one_item_of_D()
-	{
-		assertThat(Checkout.checkout("D"), equalTo(15));
-	}
-	
-	@Test
-	public void return_150_for_a_basket_with_ABCa()
-	{
-		assertThat(Checkout.checkout("ABCa"), equalTo(-1));
-	}
-	
-	@Test
-	public void return_100_for_a_basket_with_AxA()
-	{
-		assertThat(Checkout.checkout("AxA"), equalTo(-1));
-	}
+		assertThat(Checkout.checkout(basket), equalTo(totalValue));
+	}	
 }
